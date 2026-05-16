@@ -1,5 +1,5 @@
 import { createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
+// import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { getUser } from './lib/auth';
 
 // Layouts
