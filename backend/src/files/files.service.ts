@@ -9,15 +9,16 @@ export class FilesService implements OnModuleInit {
   private bucket: string;
 
   onModuleInit() {
-    this.bucket = process.env.MINIO_BUCKET || 'resumes';
+    this.bucket = process.env.STORAGE_BUCKET || 'resumes';
     this.s3 = new S3Client({
-      endpoint: `http://${process.env.MINIO_ENDPOINT || 'localhost'}:${process.env.MINIO_PORT || 9000}`,
-      region: 'us-east-1',
+      endpoint: process.env.STORAGE_ENDPOINT,
+      region: process.env.STORAGE_REGION || 'auto',
       credentials: {
-        accessKeyId: process.env.MINIO_ACCESS_KEY || 'minioadmin',
-        secretAccessKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+        accessKeyId: process.env.STORAGE_ACCESS_KEY!,
+        secretAccessKey: process.env.STORAGE_SECRET_KEY!,
       },
-      forcePathStyle: true,
+      // MinIO requires path-style; R2 uses virtual-hosted style
+      forcePathStyle: process.env.STORAGE_FORCE_PATH_STYLE === 'true',
     });
   }
 

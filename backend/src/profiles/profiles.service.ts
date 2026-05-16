@@ -2,32 +2,26 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { db } from '../db';
 import { profiles, skills, profileSkills, projects } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { FilesService } from '../files/files.service';
 import { AiService, ExtractedProfile } from '../ai/ai.service';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ text: string }>;
-import { v4 as uuidv4 } from 'uuid';
+
+// Never send the raw binary back over the wire
+const WITHOUT_FILE_DATA = { fileData: false } as const;
 
 @Injectable()
 export class ProfilesService {
-  constructor(
-    private filesService: FilesService,
-    private aiService: AiService,
-  ) {}
+  constructor(private aiService: AiService) {}
 
   async uploadAndExtract(userId: string, file: Express.Multer.File) {
-    const fileKey = `resumes/${userId}/${uuidv4()}-${file.originalname}`;
-    await this.filesService.upload(fileKey, file.buffer, file.mimetype);
-
     const pdfData = await pdfParse(file.buffer);
-    const rawText = pdfData.text;
 
     const [profile] = await db
       .insert(profiles)
-      .values({ userId, fileKey, rawText, status: 'pending' })
-      .returning();
+      .values({ userId, fileData: file.buffer, rawText: pdfData.text, status: 'pending' })
+      .returning({ id: profiles.id, userId: profiles.userId, status: profiles.status, createdAt: profiles.createdAt, updatedAt: profiles.updatedAt });
 
-    this.extractAndSave(profile.id, rawText).catch(console.error);
+    this.extractAndSave(profile.id, pdfData.text).catch(console.error);
 
     return profile;
   }
@@ -40,12 +34,7 @@ export class ProfilesService {
   async saveExtractedProfile(profileId: string, extracted: ExtractedProfile) {
     await db
       .update(profiles)
-      .set({
-        summary: extracted.summary,
-        location: extracted.location,
-        yearsTotal: extracted.yearsTotal,
-        updatedAt: new Date(),
-      })
+      .set({ summary: extracted.summary, location: extracted.location, yearsTotal: extracted.yearsTotal, updatedAt: new Date() })
       .where(eq(profiles.id, profileId));
 
     for (const skill of extracted.skills) {
@@ -55,11 +44,7 @@ export class ProfilesService {
       if (!existingSkill) {
         [existingSkill] = await db
           .insert(skills)
-          .values({
-            name: skill.name,
-            normalizedName: normalized,
-            category: skill.category,
-          })
+          .values({ name: skill.name, normalizedName: normalized, category: skill.category })
           .returning();
       }
 
@@ -91,11 +76,8 @@ export class ProfilesService {
   async getProfile(profileId: string) {
     const profile = await db.query.profiles.findFirst({
       where: eq(profiles.id, profileId),
-      with: {
-        user: true,
-        profileSkills: { with: { skill: true } },
-        projects: true,
-      },
+      columns: WITHOUT_FILE_DATA,
+      with: { user: true, profileSkills: { with: { skill: true } }, projects: true },
     });
     if (!profile) throw new NotFoundException('Profile not found');
     return profile;
@@ -104,17 +86,15 @@ export class ProfilesService {
   async getProfileByUserId(userId: string) {
     return db.query.profiles.findFirst({
       where: eq(profiles.userId, userId),
-      with: {
-        user: true,
-        profileSkills: { with: { skill: true } },
-        projects: true,
-      },
+      columns: WITHOUT_FILE_DATA,
+      with: { user: true, profileSkills: { with: { skill: true } }, projects: true },
     });
   }
 
   async getPendingQueue() {
     return db.query.profiles.findMany({
       where: eq(profiles.status, 'pending'),
+      columns: WITHOUT_FILE_DATA,
       with: { user: true, profileSkills: { with: { skill: true } }, projects: true },
     });
   }
@@ -124,7 +104,7 @@ export class ProfilesService {
       .update(profiles)
       .set({ status, updatedAt: new Date() })
       .where(eq(profiles.id, profileId))
-      .returning();
+      .returning({ id: profiles.id, status: profiles.status, updatedAt: profiles.updatedAt });
     if (!updated) throw new NotFoundException('Profile not found');
     return updated;
   }
@@ -132,11 +112,8 @@ export class ProfilesService {
   async getAllApproved() {
     return db.query.profiles.findMany({
       where: eq(profiles.status, 'approved'),
-      with: {
-        user: true,
-        profileSkills: { with: { skill: true } },
-        projects: true,
-      },
+      columns: WITHOUT_FILE_DATA,
+      with: { user: true, profileSkills: { with: { skill: true } }, projects: true },
     });
   }
 }

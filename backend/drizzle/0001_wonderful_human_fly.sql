@@ -1,0 +1,1 @@
+ALTER TABLE "profiles" ADD COLUMN "file_data" "bytea";

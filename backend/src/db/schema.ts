@@ -1,4 +1,8 @@
-import { pgTable, uuid, text, timestamp, pgEnum, integer, boolean, jsonb, real } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, pgEnum, integer, boolean, jsonb, real, customType } from 'drizzle-orm/pg-core';
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() { return 'bytea'; },
+});
 import { relations } from 'drizzle-orm';
 
 export const userRoleEnum = pgEnum('user_role', ['hr', 'employee']);
@@ -21,6 +25,7 @@ export const profiles = pgTable('profiles', {
   userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
   status: profileStatusEnum('status').notNull().default('pending'),
   fileKey: text('file_key'),
+  fileData: bytea('file_data'),
   rawText: text('raw_text'),
   summary: text('summary'),
   location: text('location'),
