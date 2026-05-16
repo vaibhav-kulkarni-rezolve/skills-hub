@@ -1,77 +1,84 @@
-import { useState, useEffect } from 'react';
-import { useParams } from '@tanstack/react-router';
-import { employeesApi } from '../lib/api';
+import { useState, useEffect } from 'react'
+import { useParams } from '@tanstack/react-router'
+import { employeesApi } from '../lib/api'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Separator } from '@/components/ui/separator'
 
 export function EmployeeDetailPage() {
-  const { id } = useParams({ from: '/protected/employees/$id' });
-  const [employee, setEmployee] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { id } = useParams({ from: '/protected/employees/$id' })
+  const [employee, setEmployee] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    employeesApi.getById(id).then(setEmployee).finally(() => setLoading(false));
-  }, [id]);
+    employeesApi.getById(id).then(setEmployee).finally(() => setLoading(false))
+  }, [id])
 
-  if (loading) return <p>Loading profile...</p>;
-  if (!employee) return <p>Employee not found.</p>;
+  if (loading) return <p className="text-muted-foreground">Loading profile...</p>
+  if (!employee) return <p className="text-muted-foreground">Employee not found.</p>
 
-  const profile = employee.profile;
+  const profile = employee.profile
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 32 }}>
-        <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#3b82f6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 24 }}>
-          {employee.name.charAt(0)}
-        </div>
+    <div className="max-w-3xl">
+      <div className="flex items-center gap-4 mb-8">
+        <Avatar className="h-16 w-16 text-lg">
+          <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+        </Avatar>
         <div>
-          <h1 style={{ margin: 0 }}>{employee.name}</h1>
-          <p style={{ color: '#64748b', margin: '4px 0 0' }}>{employee.email}</p>
-          {profile?.location && <p style={{ color: '#94a3b8', margin: '4px 0 0', fontSize: 14 }}>Location: {profile.location}</p>}
+          <h1 className="text-2xl font-bold">{employee.name}</h1>
+          <p className="text-muted-foreground">{employee.email}</p>
+          {profile?.location && <p className="text-sm text-muted-foreground mt-0.5">📍 {profile.location}</p>}
         </div>
       </div>
 
       {profile?.summary && (
-        <section style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, marginBottom: 8 }}>Summary</h2>
-          <p style={{ color: '#374151', lineHeight: 1.6 }}>{profile.summary}</p>
-        </section>
+        <Card className="mb-4">
+          <CardHeader><CardTitle className="text-base">Summary</CardTitle></CardHeader>
+          <CardContent><p className="text-sm leading-relaxed">{profile.summary}</p></CardContent>
+        </Card>
       )}
 
       {profile?.profileSkills?.length > 0 && (
-        <section style={{ marginBottom: 24 }}>
-          <h2 style={{ fontSize: 16, marginBottom: 12 }}>Skills</h2>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {profile.profileSkills.map((ps: any) => (
-              <div key={ps.id} style={{ padding: '6px 14px', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 14 }}>
-                <strong>{ps.skill.name}</strong>
-                <span style={{ color: '#64748b', marginLeft: 6 }}>{ps.proficiency}</span>
-                {ps.yearsExperience && <span style={{ color: '#94a3b8', marginLeft: 4 }}>{ps.yearsExperience}yr</span>}
-                {ps.inferred && <span style={{ color: '#d97706', marginLeft: 4, fontSize: 11 }}>inferred</span>}
-              </div>
-            ))}
-          </div>
-        </section>
+        <Card className="mb-4">
+          <CardHeader><CardTitle className="text-base">Skills</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {profile.profileSkills.map((ps: any) => (
+                <div key={ps.id} className="flex items-center gap-1.5 border rounded-full px-3 py-1 text-sm">
+                  <span className="font-medium">{ps.skill.name}</span>
+                  <Separator orientation="vertical" className="h-3" />
+                  <span className="text-muted-foreground capitalize">{ps.proficiency}</span>
+                  {ps.yearsExperience && <span className="text-muted-foreground">{ps.yearsExperience}yr</span>}
+                  {ps.inferred && <Badge variant="warning" className="text-xs py-0">inferred</Badge>}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {profile?.projects?.length > 0 && (
-        <section>
-          <h2 style={{ fontSize: 16, marginBottom: 12 }}>Projects</h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <Card>
+          <CardHeader><CardTitle className="text-base">Projects</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
             {profile.projects.map((p: any) => (
-              <div key={p.id} style={{ padding: 16, background: '#f8fafc', borderRadius: 8 }}>
-                <h3 style={{ margin: '0 0 8px', fontSize: 15 }}>{p.title}</h3>
-                <p style={{ color: '#475569', margin: '0 0 8px', fontSize: 14 }}>{p.description}</p>
+              <div key={p.id} className="rounded-lg bg-muted/40 p-4">
+                <p className="font-medium mb-1">{p.title}</p>
+                <p className="text-sm text-muted-foreground mb-2">{p.description}</p>
                 {p.technologies?.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  <div className="flex flex-wrap gap-1.5">
                     {p.technologies.map((t: string) => (
-                      <span key={t} style={{ padding: '2px 8px', background: '#e2e8f0', borderRadius: 4, fontSize: 12, color: '#475569' }}>{t}</span>
+                      <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>
                     ))}
                   </div>
                 )}
               </div>
             ))}
-          </div>
-        </section>
+          </CardContent>
+        </Card>
       )}
     </div>
-  );
+  )
 }

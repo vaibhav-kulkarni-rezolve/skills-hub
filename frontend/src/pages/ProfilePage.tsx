@@ -1,112 +1,124 @@
-import { useState, useEffect, useRef } from 'react';
-import { profilesApi } from '../lib/api';
-import type { Profile } from '../lib/api';
+import { useState, useEffect, useRef } from 'react'
+import { profilesApi, type Profile } from '../lib/api'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Upload } from 'lucide-react'
 
 export function ProfilePage() {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMsg, setUploadMsg] = useState('');
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  const [uploadMsg, setUploadMsg] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    profilesApi.getMyProfile().then(setProfile).finally(() => setLoading(false));
-  }, []);
+    profilesApi.getMyProfile().then(setProfile).finally(() => setLoading(false))
+  }, [])
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadMsg('');
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    setUploadMsg('')
     try {
-      const newProfile = await profilesApi.upload(file);
-      setProfile(newProfile);
-      setUploadMsg('Resume uploaded! AI extraction is processing — refresh in a few seconds to see your skills.');
+      const newProfile = await profilesApi.upload(file)
+      setProfile(newProfile)
+      setUploadMsg('Resume uploaded! AI extraction is processing — refresh in a few seconds to see your skills.')
     } catch {
-      setUploadMsg('Upload failed. Please try again.');
+      setUploadMsg('Upload failed. Please try again.')
     } finally {
-      setUploading(false);
+      setUploading(false)
     }
-  };
+  }
 
-  if (loading) return <p>Loading profile...</p>;
+  if (loading) return <p className="text-muted-foreground">Loading profile...</p>
 
   return (
-    <div style={{ maxWidth: 800 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h1>My Profile</h1>
+    <div className="max-w-3xl">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <input ref={fileRef} type="file" accept=".pdf" onChange={handleUpload} style={{ display: 'none' }} />
-          <button onClick={() => fileRef.current?.click()} disabled={uploading}
-            style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>
-            {uploading ? 'Uploading...' : 'Upload Resume (PDF)'}
-          </button>
+          <h1 className="text-2xl font-bold tracking-tight">My Profile</h1>
+          <p className="text-muted-foreground mt-1">Your skills and experience</p>
+        </div>
+        <div>
+          <input ref={fileRef} type="file" accept=".pdf" onChange={handleUpload} className="hidden" />
+          <Button onClick={() => fileRef.current?.click()} disabled={uploading}>
+            <Upload className="h-4 w-4 mr-2" />
+            {uploading ? 'Uploading...' : 'Upload Resume'}
+          </Button>
         </div>
       </div>
 
       {uploadMsg && (
-        <div style={{ padding: 16, background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: 8, marginBottom: 24, color: '#1d4ed8' }}>
+        <div className="mb-6 p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
           {uploadMsg}
         </div>
       )}
 
       {!profile ? (
-        <div style={{ textAlign: 'center', padding: 48, border: '2px dashed #e2e8f0', borderRadius: 8 }}>
-          <p style={{ color: '#64748b', marginBottom: 16 }}>No profile yet. Upload your resume to get started.</p>
-          <button onClick={() => fileRef.current?.click()}
-            style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>
-            Upload Resume
-          </button>
+        <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed rounded-xl text-center">
+          <Upload className="h-10 w-10 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground mb-4">No profile yet. Upload your resume to get started.</p>
+          <Button variant="outline" onClick={() => fileRef.current?.click()}>Upload Resume (PDF)</Button>
         </div>
       ) : (
-        <div>
-          <div style={{ marginBottom: 16, padding: '8px 16px', borderRadius: 6, display: 'inline-block', background: profile.status === 'approved' ? '#dcfce7' : profile.status === 'pending' ? '#fef9c3' : '#fee2e2', color: profile.status === 'approved' ? '#16a34a' : profile.status === 'pending' ? '#854d0e' : '#dc2626' }}>
-            Status: {profile.status}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Badge variant={profile.status === 'approved' ? 'success' : profile.status === 'pending' ? 'warning' : 'destructive'}>
+              {profile.status}
+            </Badge>
           </div>
 
           {profile.summary && (
-            <section style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: 16 }}>Summary</h2>
-              <p style={{ color: '#374151', lineHeight: 1.6 }}>{profile.summary}</p>
-            </section>
+            <Card>
+              <CardHeader><CardTitle className="text-base">Summary</CardTitle></CardHeader>
+              <CardContent><p className="text-sm leading-relaxed">{profile.summary}</p></CardContent>
+            </Card>
           )}
 
           {profile.profileSkills?.length > 0 && (
-            <section style={{ marginBottom: 24 }}>
-              <h2 style={{ fontSize: 16, marginBottom: 12 }}>Skills</h2>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {profile.profileSkills.map(ps => (
-                  <div key={ps.id} style={{ padding: '6px 14px', border: '1px solid #e2e8f0', borderRadius: 20, fontSize: 14 }}>
-                    <strong>{ps.skill.name}</strong>
-                    <span style={{ color: '#64748b', marginLeft: 6 }}>{ps.proficiency}</span>
-                    {ps.yearsExperience && <span style={{ color: '#94a3b8', marginLeft: 4 }}>{ps.yearsExperience}yr</span>}
-                    {ps.inferred && <span style={{ color: '#d97706', marginLeft: 4, fontSize: 11 }}>(inferred)</span>}
-                  </div>
-                ))}
-              </div>
-            </section>
+            <Card>
+              <CardHeader><CardTitle className="text-base">Skills</CardTitle></CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {profile.profileSkills.map(ps => (
+                    <div key={ps.id} className="flex items-center gap-1.5 border rounded-full px-3 py-1 text-sm">
+                      <span className="font-medium">{ps.skill.name}</span>
+                      <Separator orientation="vertical" className="h-3" />
+                      <span className="text-muted-foreground capitalize">{ps.proficiency}</span>
+                      {ps.yearsExperience && <span className="text-muted-foreground">{ps.yearsExperience}yr</span>}
+                      {ps.inferred && <Badge variant="warning" className="text-xs py-0">inferred</Badge>}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {profile.projects?.length > 0 && (
-            <section>
-              <h2 style={{ fontSize: 16, marginBottom: 12 }}>Projects</h2>
-              {profile.projects.map(p => (
-                <div key={p.id} style={{ padding: 16, background: '#f8fafc', borderRadius: 8, marginBottom: 12 }}>
-                  <h3 style={{ margin: '0 0 8px', fontSize: 15 }}>{p.title}</h3>
-                  <p style={{ color: '#475569', margin: '0 0 8px', fontSize: 14 }}>{p.description}</p>
-                  {p.technologies?.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                      {p.technologies.map(t => (
-                        <span key={t} style={{ padding: '2px 8px', background: '#e2e8f0', borderRadius: 4, fontSize: 12, color: '#475569' }}>{t}</span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </section>
+            <Card>
+              <CardHeader><CardTitle className="text-base">Projects</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                {profile.projects.map(p => (
+                  <div key={p.id} className="rounded-lg bg-muted/40 p-4">
+                    <p className="font-medium mb-1">{p.title}</p>
+                    <p className="text-sm text-muted-foreground mb-2">{p.description}</p>
+                    {p.technologies?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {p.technologies.map(t => (
+                          <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
         </div>
       )}
     </div>
-  );
+  )
 }

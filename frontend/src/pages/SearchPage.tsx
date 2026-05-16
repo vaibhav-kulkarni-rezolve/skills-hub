@@ -1,101 +1,113 @@
-import { useState } from 'react';
-import { searchApi } from '../lib/api';
-import type { SearchResult } from '../lib/api';
+import { useState } from 'react'
+import { searchApi, type SearchResult } from '../lib/api'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Search } from 'lucide-react'
 
 const EXAMPLE_QUERIES = [
   'Who can lead a React project that also needs WebSocket experience?',
   'Find backend developers with Java and payment gateway integration',
   'Senior frontend engineers with TypeScript expertise',
-];
+]
+
+function MatchScoreBadge({ score }: { score: number }) {
+  const variant = score >= 80 ? 'success' : score >= 60 ? 'warning' : 'secondary'
+  return <Badge variant={variant} className="text-base font-bold px-3 py-1">{score}%</Badge>
+}
 
 export function SearchPage() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [loading, setLoading] = useState(false)
+  const [searched, setSearched] = useState(false)
 
   const handleSearch = async (q: string = query) => {
-    if (!q.trim()) return;
-    setLoading(true);
-    setSearched(true);
+    if (!q.trim()) return
+    setLoading(true)
+    setSearched(true)
+    setQuery(q)
     try {
-      const data = await searchApi.search(q);
-      setResults(data.results);
+      const data = await searchApi.search(q)
+      setResults(data.results)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div>
-      <h1>Talent Search</h1>
-      <p style={{ color: '#64748b', marginBottom: 24 }}>Ask in plain English — find the right people for your project</p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Talent Search</h1>
+        <p className="text-muted-foreground mt-1">Ask in plain English — find the right people for your project</p>
+      </div>
 
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <input
+      <div className="flex gap-3 mb-6">
+        <Input
           value={query}
           onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
           placeholder="e.g. Who can lead a React project with WebSocket experience?"
-          style={{ flex: 1, padding: '12px 16px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 16 }}
+          className="text-base h-11"
         />
-        <button onClick={() => handleSearch()} disabled={loading}
-          style={{ padding: '12px 24px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 16 }}>
+        <Button onClick={() => handleSearch()} disabled={loading} size="lg" className="shrink-0">
+          <Search className="h-4 w-4 mr-2" />
           {loading ? 'Searching...' : 'Search'}
-        </button>
+        </Button>
       </div>
 
       {!searched && (
-        <div>
-          <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 8 }}>Try an example:</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {EXAMPLE_QUERIES.map(q => (
-              <button key={q} onClick={() => { setQuery(q); handleSearch(q); }}
-                style={{ textAlign: 'left', padding: '8px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, cursor: 'pointer', color: '#475569' }}>
-                {q}
-              </button>
-            ))}
-          </div>
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Try an example:</p>
+          {EXAMPLE_QUERIES.map(q => (
+            <button key={q} onClick={() => handleSearch(q)}
+              className="block w-full text-left px-4 py-2.5 rounded-lg border bg-muted/40 hover:bg-muted text-sm transition-colors">
+              {q}
+            </button>
+          ))}
         </div>
       )}
 
       {searched && !loading && results.length === 0 && (
-        <p style={{ color: '#64748b' }}>No matches found. Try a different query.</p>
+        <p className="text-muted-foreground">No matches found. Try a different query.</p>
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 24 }}>
+      <div className="space-y-4 mt-2">
         {results.map(result => (
-          <div key={result.profileId} style={{ padding: 24, border: '1px solid #e2e8f0', borderRadius: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-              <div>
-                <h3 style={{ margin: 0 }}>{result.profile?.user?.name}</h3>
-                <p style={{ color: '#64748b', margin: '4px 0 0', fontSize: 14 }}>{result.profile?.location}</p>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 28, fontWeight: 700, color: result.matchScore >= 80 ? '#16a34a' : result.matchScore >= 60 ? '#d97706' : '#64748b' }}>
-                  {result.matchScore}%
+          <Card key={result.profileId}>
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-semibold text-lg">{result.profile?.user?.name}</p>
+                  {result.profile?.location && (
+                    <p className="text-sm text-muted-foreground">{result.profile.location}</p>
+                  )}
                 </div>
-                <div style={{ fontSize: 12, color: '#94a3b8' }}>match</div>
+                <div className="text-right shrink-0">
+                  <MatchScoreBadge score={result.matchScore} />
+                  <p className="text-xs text-muted-foreground mt-1">match</p>
+                </div>
               </div>
-            </div>
-            <p style={{ color: '#374151', margin: '12px 0', fontStyle: 'italic' }}>"{result.reasoning}"</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {result.highlights.map((h, i) => (
-                <span key={i} style={{ padding: '4px 10px', background: '#eff6ff', color: '#3b82f6', borderRadius: 12, fontSize: 13 }}>{h}</span>
-              ))}
-            </div>
-            {result.profile?.profileSkills?.length > 0 && (
-              <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {result.profile.profileSkills.slice(0, 8).map(ps => (
-                  <span key={ps.id} style={{ padding: '2px 8px', background: '#f1f5f9', color: '#475569', borderRadius: 4, fontSize: 12 }}>
-                    {ps.skill.name}
-                  </span>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm italic text-muted-foreground">"{result.reasoning}"</p>
+              <div className="flex flex-wrap gap-2">
+                {result.highlights.map((h, i) => (
+                  <Badge key={i} variant="secondary">{h}</Badge>
                 ))}
               </div>
-            )}
-          </div>
+              {result.profile?.profileSkills?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {result.profile.profileSkills.slice(0, 8).map(ps => (
+                    <Badge key={ps.id} variant="outline">{ps.skill.name}</Badge>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
-  );
+  )
 }

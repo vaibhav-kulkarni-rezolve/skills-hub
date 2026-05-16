@@ -1,47 +1,73 @@
-import { useState } from 'react';
-import { useNavigate, Link } from '@tanstack/react-router';
-import { authApi } from '../lib/api';
-import { setAuth } from '../lib/auth';
+import { useState } from 'react'
+import { useNavigate, Link } from '@tanstack/react-router'
+import { authApi } from '../lib/api'
+import { setAuth } from '../lib/auth'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { BrainCircuit } from 'lucide-react'
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    e.preventDefault()
+    setLoading(true)
+    setError('')
     try {
-      const { token, user } = await authApi.login(email, password);
-      setAuth(token, user);
-      navigate({ to: '/dashboard' });
+      const { token, user } = await authApi.login(email, password)
+      setAuth(token, user)
+      navigate({ to: '/dashboard' })
     } catch {
-      setError('Invalid email or password');
+      setError('Invalid email or password')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: 32, border: '1px solid #e2e8f0', borderRadius: 8 }}>
-      <h1 style={{ marginBottom: 24 }}>Sign in to SkillsHub</h1>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)}
-          style={{ padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 4 }} required />
-        <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)}
-          style={{ padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 4 }} required />
-        {error && <p style={{ color: '#ef4444', margin: 0 }}>{error}</p>}
-        <button type="submit" disabled={loading}
-          style={{ padding: '10px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
-          {loading ? 'Signing in...' : 'Sign in'}
-        </button>
-      </form>
-      <p style={{ marginTop: 16, textAlign: 'center' }}>
-        No account? <Link to="/register">Register</Link>
-      </p>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="w-full max-w-sm">
+        <div className="flex justify-center mb-6">
+          <div className="flex items-center gap-2 text-xl font-bold">
+            <BrainCircuit className="h-6 w-6" />
+            SkillsHub
+          </div>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign in</CardTitle>
+            <CardDescription>Enter your credentials to access your account</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+              </div>
+              {error && <p className="text-sm text-destructive">{error}</p>}
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3">
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Signing in...' : 'Sign in'}
+              </Button>
+              <p className="text-sm text-muted-foreground text-center">
+                No account?{' '}
+                <Link to="/register" className="text-foreground font-medium hover:underline">Register</Link>
+              </p>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
     </div>
-  );
+  )
 }

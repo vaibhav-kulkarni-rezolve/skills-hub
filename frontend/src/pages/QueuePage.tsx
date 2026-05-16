@@ -1,77 +1,85 @@
-import { useState, useEffect } from 'react';
-import { profilesApi } from '../lib/api';
-import type { Profile } from '../lib/api';
+import { useState, useEffect } from 'react'
+import { profilesApi, type Profile } from '../lib/api'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { CheckCircle, XCircle } from 'lucide-react'
 
 export function QueuePage() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   useEffect(() => {
-    profilesApi.getQueue().then(setProfiles).finally(() => setLoading(false));
-  }, []);
+    profilesApi.getQueue().then(setProfiles).finally(() => setLoading(false))
+  }, [])
 
   const handleAction = async (id: string, action: 'approve' | 'reject') => {
-    setActionLoading(id);
+    setActionLoading(id)
     try {
-      await (action === 'approve' ? profilesApi.approve(id) : profilesApi.reject(id));
-      setProfiles(p => p.filter(pr => pr.id !== id));
+      await (action === 'approve' ? profilesApi.approve(id) : profilesApi.reject(id))
+      setProfiles(p => p.filter(pr => pr.id !== id))
     } finally {
-      setActionLoading(null);
+      setActionLoading(null)
     }
-  };
+  }
 
-  if (loading) return <p>Loading queue...</p>;
+  if (loading) return <p className="text-muted-foreground">Loading queue...</p>
 
   return (
     <div>
-      <h1>Review Queue</h1>
-      <p style={{ color: '#64748b', marginBottom: 24 }}>
-        {profiles.length === 0 ? 'No profiles pending review.' : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''} awaiting review`}
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">Review Queue</h1>
+        <p className="text-muted-foreground mt-1">
+          {profiles.length === 0 ? 'No profiles pending review.' : `${profiles.length} profile${profiles.length !== 1 ? 's' : ''} awaiting review`}
+        </p>
+      </div>
+      <div className="space-y-4">
         {profiles.map(profile => (
-          <div key={profile.id} style={{ padding: 24, border: '1px solid #e2e8f0', borderRadius: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <div>
-                <h3 style={{ margin: 0 }}>{profile.user?.name}</h3>
-                <p style={{ color: '#64748b', margin: '4px 0 0', fontSize: 14 }}>{profile.user?.email}</p>
+          <Card key={profile.id}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">{profile.user?.name}</p>
+                  <p className="text-sm text-muted-foreground">{profile.user?.email}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" disabled={actionLoading === profile.id}
+                    onClick={() => handleAction(profile.id, 'reject')}
+                    className="text-destructive hover:text-destructive">
+                    <XCircle className="h-4 w-4 mr-1" />Reject
+                  </Button>
+                  <Button size="sm" disabled={actionLoading === profile.id}
+                    onClick={() => handleAction(profile.id, 'approve')}>
+                    <CheckCircle className="h-4 w-4 mr-1" />Approve
+                  </Button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => handleAction(profile.id, 'reject')} disabled={actionLoading === profile.id}
-                  style={{ padding: '8px 16px', background: 'white', border: '1px solid #ef4444', color: '#ef4444', borderRadius: 6, cursor: 'pointer' }}>
-                  Reject
-                </button>
-                <button onClick={() => handleAction(profile.id, 'approve')} disabled={actionLoading === profile.id}
-                  style={{ padding: '8px 16px', background: '#16a34a', border: 'none', color: 'white', borderRadius: 6, cursor: 'pointer' }}>
-                  Approve
-                </button>
-              </div>
-            </div>
-            {profile.summary && <p style={{ color: '#374151', marginBottom: 12 }}>{profile.summary}</p>}
-            {profile.location && <p style={{ color: '#64748b', fontSize: 14, marginBottom: 12 }}>Location: {profile.location}</p>}
-            {profile.profileSkills?.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
-                {profile.profileSkills.map(ps => (
-                  <span key={ps.id} style={{ padding: '3px 10px', background: ps.inferred ? '#fef9c3' : '#eff6ff', color: ps.inferred ? '#854d0e' : '#3b82f6', borderRadius: 12, fontSize: 13 }}>
-                    {ps.skill.name} · {ps.proficiency}{ps.inferred ? ' (inferred)' : ''}
-                  </span>
-                ))}
-              </div>
-            )}
-            {profile.projects?.length > 0 && (
-              <div>
-                <p style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>Projects:</p>
-                {profile.projects.map(p => (
-                  <p key={p.id} style={{ margin: '0 0 4px', fontSize: 14, color: '#475569' }}>
-                    <strong>{p.title}</strong> — {p.description}
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {profile.summary && <p className="text-sm">{profile.summary}</p>}
+              {profile.location && <p className="text-sm text-muted-foreground">📍 {profile.location}</p>}
+              {profile.profileSkills?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {profile.profileSkills.map(ps => (
+                    <Badge key={ps.id} variant={ps.inferred ? 'warning' : 'secondary'}>
+                      {ps.skill.name} · {ps.proficiency}{ps.inferred ? ' (inferred)' : ''}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {profile.projects?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5">Projects</p>
+                  {profile.projects.map(p => (
+                    <p key={p.id} className="text-sm"><strong>{p.title}</strong> — {p.description}</p>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
-  );
+  )
 }
