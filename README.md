@@ -73,6 +73,8 @@ Seeds 15 realistic employee profiles, all approved and immediately searchable. L
 
 ### 5. Start the backend
 
+Note: make sure the environment variables are loaded. One way to do it is `set -a && . .env && set +a`.
+
 ```bash
 npm run start:dev
 ```

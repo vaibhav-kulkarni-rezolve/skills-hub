@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillsHub — Presentation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --bg2: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --green: #22c55e;
+      --yellow: #eab308;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 64px 80px;
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: all;
+    }
+
+    .slide.exit {
+      opacity: 0;
+      transform: translateX(-40px);
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    h1 { font-size: 56px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+    h2 { font-size: 40px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 32px; }
+    .subtitle { font-size: 22px; color: var(--muted); margin-top: 16px; line-height: 1.5; max-width: 620px; }
+    p { font-size: 17px; color: var(--muted); line-height: 1.7; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      width: 48px;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      margin-bottom: 32px;
+    }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .card p { font-size: 14px; }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge.green {
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    .badge.purple {
+      background: rgba(99, 102, 241, 0.15);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+
+    .flow-step {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .flow-step .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .flow-step .value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 20px;
+      padding: 0 8px;
+      flex-shrink: 0;
+    }
+
+    .flow-accent .flow-step {
+      border-color: var(--accent);
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    /* ── ARCH ── */
+    .arch {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr 80px 1fr;
+      align-items: center;
+      gap: 0;
+    }
+
+    .arch-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+
+    .arch-box .arch-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .arch-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .arch-box li {
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .arch-box li::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .arch-arrow {
+      text-align: center;
+      color: var(--muted);
+      font-size: 22px;
+    }
+
+    /* ── PROBLEM QUOTE ── */
+    .quote {
+      border-left: 3px solid var(--accent);
+      padding: 16px 24px;
+      background: rgba(59, 130, 246, 0.06);
+      border-radius: 0 8px 8px 0;
+      font-size: 17px;
+      color: var(--text);
+      font-style: italic;
+      line-height: 1.6;
+    }
+
+    /* ── NEXT LIST ── */
+    .next-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .next-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .next-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .next-item h3 { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
+    .next-item p { font-size: 14px; }
+
+    /* ── TITLE SLIDE ── */
+    .slide-title { background: var(--bg); }
+
+    .title-accent {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .built-with {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 36px;
+    }
+
+    /* ── STAT ── */
+    .stat-row {
+      display: flex;
+      gap: 24px;
+      margin-top: 8px;
+    }
+
+    .stat {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 24px;
+      text-align: center;
+    }
+
+    .stat .num {
+      font-size: 32px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat .lbl { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* ── NAVIGATION ── */
+    .nav {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .nav button {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .nav button:hover { background: var(--border); border-color: var(--accent); }
+    .nav button:disabled { opacity: 0.3; cursor: default; }
+
+    .progress {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.2s, transform 0.2s;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: var(--accent);
+      transform: scale(1.4);
+    }
+
+    .slide-num {
+      font-size: 12px;
+      color: var(--muted);
+      min-width: 40px;
+      text-align: center;
+    }
+
+    /* ── HIGHLIGHT ── */
+    .hl { color: var(--text); font-weight: 600; }
+    .hl-blue { color: #60a5fa; font-weight: 600; }
+
+    /* ── TWO-COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .col-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    /* ── PROBLEM PAIN ── */
+    .pain-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .pain-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .pain-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .pain-item p { font-size: 16px; color: var(--text); }
+    .pain-item p span { color: var(--muted); font-size: 14px; display: block; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ── SLIDE 1: TITLE ── -->
+  <section class="slide slide-title active">
+    <div class="eyebrow">Hackathon 2026 · Skills Intelligence</div>
+    <h1><span class="title-accent">SkillsHub</span></h1>
+    <p class="subtitle">An AI-powered platform that understands your team's skills — and answers HR's questions in natural language.</p>
+    <div class="built-with">
+      <span class="badge">NestJS</span>
+      <span class="badge">React + TanStack Router</span>
+      <span class="badge">PostgreSQL + Drizzle</span>
+      <span class="badge">GPT-4o</span>
+      <span class="badge">shadcn/ui</span>
+      <span class="badge">MinIO</span>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 2: PROBLEM ── -->
+  <section class="slide">
+    <div class="eyebrow">The Problem</div>
+    <h2>Skills data is scattered — and HR is flying blind</h2>
+    <div class="two-col">
+      <div class="pain-list">
+        <div class="pain-item">
+          <div class="pain-icon">📋</div>
+          <p>Skills live in spreadsheets and outdated profiles<span>No single source of truth, constantly stale</span></p>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">💬</div>
+          <p>Staffing decisions happen over Slack messages<span>"Who knows React?" pinged to 10 managers</span></p>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">🔍</div>
+          <p>Search tools only do keyword matching<span>Can't understand intent — misses context entirely</span></p>
+        </div>
+        <div class="pain-item">
+          <div class="pain-icon">📄</div>
+          <p>Resumes are manually reviewed and re-typed<span>Slow, error-prone, and never kept up to date</span></p>
+        </div>
+      </div>
+      <div>
+        <div class="quote">
+          "Who can lead a React project that also needs WebSocket experience, and isn't currently tied up?"
+        </div>
+        <p style="margin-top: 20px; font-size: 15px;">This is a real HR question. Today it takes hours. It should take seconds — with a reason attached to every result.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 3: APPROACH ── -->
+  <section class="slide">
+    <div class="eyebrow">Our Approach</div>
+    <h2>Two hard problems — one clear focus</h2>
+    <div class="grid-2" style="margin-top: 8px;">
+      <div class="card" style="border-color: var(--accent); background: rgba(59,130,246,0.06);">
+        <div class="card-icon">📥</div>
+        <h3>Hard Problem #1 · Smart Ingestion</h3>
+        <p>Employee uploads a PDF resume. GPT-4o extracts skills, proficiency levels, years of experience, and project history into a structured profile. Inferred skills (e.g. Next.js → React) are flagged with confidence scores. Profile lands in an HR review queue before going live.</p>
+      </div>
+      <div class="card" style="border-color: var(--accent2); background: rgba(99,102,241,0.06);">
+        <div class="card-icon">🔎</div>
+        <h3>Hard Problem #2 · Semantic Search</h3>
+        <p>HR types a natural language query. All approved profiles are summarised and sent to GPT-4o alongside the query. The model returns a ranked list — each result has a match score (0–100) and a plain-English reason. No vector embeddings — reasoning quality is better with a single well-structured prompt.</p>
+      </div>
+    </div>
+    <div class="stat-row" style="margin-top: 24px;">
+      <div class="stat"><div class="num">2</div><div class="lbl">AI flows powered by GPT-4o</div></div>
+      <div class="stat"><div class="num">100%</div><div class="lbl">Explainable results</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">Vector databases needed</div></div>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 4: HOW IT WORKS ── -->
+  <section class="slide">
+    <div class="eyebrow">How It Works</div>
+    <h2>Two AI flows end-to-end</h2>
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+      <div>
+        <div class="col-label">Resume Ingestion</div>
+        <div class="flow flow-accent">
+          <div class="flow-step"><div class="label">Employee</div><div class="value">Uploads PDF</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="label">Backend</div><div class="value">Extracts text</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent); background: rgba(59,130,246,0.1);"><div class="label">GPT-4o</div><div class="value">Parses skills + projects</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="label">Review Queue</div><div class="value">HR approves</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--green); background: rgba(34,197,94,0.08);"><div class="label">Database</div><div class="value">Profile goes live</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="col-label">Natural Language Search</div>
+        <div class="flow flow-accent">
+          <div class="flow-step"><div class="label">HR</div><div class="value">Types a query</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="label">Backend</div><div class="value">Loads all profiles</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--accent); background: rgba(59,130,246,0.1);"><div class="label">GPT-4o</div><div class="value">Ranks + explains</div></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step" style="border-color: var(--green); background: rgba(34,197,94,0.08);"><div class="label">Results</div><div class="value">Score + reason per match</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding: 16px 24px;">
+        <p style="font-size: 14px; font-style: italic; color: var(--text);">"Rahul — <span class="hl-blue">94% match.</span> Expert in React (5 yrs), led 2 real-time apps using Socket.IO, currently unallocated."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 5: ARCHITECTURE ── -->
+  <section class="slide">
+    <div class="eyebrow">Architecture</div>
+    <h2>Clean three-tier structure</h2>
+    <div class="arch" style="margin-top: 8px;">
+      <div class="arch-box">
+        <div class="arch-title">Frontend</div>
+        <ul>
+          <li>React + Vite</li>
+          <li>TanStack Router</li>
+          <li>shadcn/ui + Tailwind</li>
+          <li>Axios (JWT auth)</li>
+          <li>Role-aware UI (HR / Employee)</li>
+        </ul>
+      </div>
+      <div class="arch-arrow">⇄</div>
+      <div class="arch-box" style="border-color: var(--accent);">
+        <div class="arch-title">Backend (NestJS)</div>
+        <ul>
+          <li>AuthModule — tokens + guards</li>
+          <li>ProfilesModule — upload + queue</li>
+          <li>AiModule — GPT-4o calls</li>
+          <li>SearchModule — NL search</li>
+          <li>FilesModule — MinIO</li>
+          <li>Drizzle ORM — PostgreSQL</li>
+        </ul>
+      </div>
+      <div class="arch-arrow">⇄</div>
+      <div class="arch-box">
+        <div class="arch-title">Data Layer</div>
+        <ul>
+          <li>PostgreSQL 16</li>
+          <li>MinIO (PDF storage)</li>
+          <li>OpenAI GPT-4o API</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top: 20px;">
+      <div class="card" style="padding: 14px 18px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;">Auth</div>
+        <p style="font-size: 13px;">Token-based sessions, role guards (HR / Employee), <span class="hl">@Global()</span> AuthModule</p>
+      </div>
+      <div class="card" style="padding: 14px 18px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;">Schema</div>
+        <p style="font-size: 13px;">users → profiles → profile_skills → skills, projects, sessions</p>
+      </div>
+      <div class="card" style="padding: 14px 18px;">
+        <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;">Infra</div>
+        <p style="font-size: 13px;">Single <span class="hl">docker-compose.yml</span> spins up Postgres + MinIO with bucket pre-created</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 6: FEATURES ── -->
+  <section class="slide">
+    <div class="eyebrow">What We Built</div>
+    <h2>Core features delivered</h2>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <h3>Auth + Role Access</h3>
+        <p>Separate HR and Employee experiences. Token-based sessions, route-level guards.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📤</div>
+        <h3>Resume Ingestion</h3>
+        <p>PDF upload → GPT-4o extracts skills, proficiency, years of experience, and projects. Inferred skills flagged separately.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">✅</div>
+        <h3>Review Queue</h3>
+        <p>AI-extracted profiles land in a queue. HR approves or rejects before they become searchable.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔎</div>
+        <h3>Semantic Search</h3>
+        <p>Natural language queries return ranked results with match scores and plain-English reasoning per candidate.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">👥</div>
+        <h3>Employee Directory</h3>
+        <p>Browse all employees, view full profiles with skills taxonomy and project history.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>Skill Inference</h3>
+        <p>GPT-4o infers implied skills from the resume context (e.g. Spring Boot → Java) with confidence scores.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SLIDE 7: WHAT'S NEXT ── -->
+  <section class="slide">
+    <div class="eyebrow">What's Next</div>
+    <h2>If we had more time</h2>
+    <div class="two-col">
+      <div class="next-list">
+        <div class="next-item">
+          <div class="next-num">1</div>
+          <div>
+            <h3>Team Builder Mode</h3>
+            <p>HR describes a project and the system proposes a full team — with rationale and alternatives. Powered by a multi-step GPT-4o prompt chain.</p>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">2</div>
+          <div>
+            <h3>Conversational Search</h3>
+            <p>Let HR refine results in a chat interface — "only show ones available next month" — with context carried across turns.</p>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">3</div>
+          <div>
+            <h3>GitHub Integration</h3>
+            <p>Pull public repos and infer active skills from recent commits — more accurate than a resume alone.</p>
+          </div>
+        </div>
+      </div>
+      <div class="next-list">
+        <div class="next-item">
+          <div class="next-num">4</div>
+          <div>
+            <h3>Skill Gap Analysis</h3>
+            <p>Show which skills the company is light on relative to current and upcoming project needs. Surface it on the HR dashboard.</p>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">5</div>
+          <div>
+            <h3>Bulk Import</h3>
+            <p>Upload a folder of resumes or a CSV and process them in batch with a background job queue.</p>
+          </div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">6</div>
+          <div>
+            <h3>Scale the Search</h3>
+            <p>Replace the single-prompt approach with pgvector embeddings for orgs with hundreds of employees, keeping the reasoning layer on top.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── NAVIGATION ── -->
+<nav class="nav">
+  <button id="prev" disabled>&#8592;</button>
+  <div class="progress" id="progress"></div>
+  <span class="slide-num" id="slideNum">1 / 7</span>
+  <button id="next">&#8594;</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+  const slideNum = document.getElementById('slideNum');
+  const progressEl = document.getElementById('progress');
+  let current = 0;
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    progressEl.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit');
+    setTimeout(() => slides[current].classList.remove('exit'), 350);
+
+    current = n;
+    slides[current].classList.add('active');
+
+    document.querySelectorAll('.dot').forEach((d, i) =>
+      d.classList.toggle('active', i === current)
+    );
+
+    slideNum.textContent = `${current + 1} / ${slides.length}`;
+    prev.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+  }
+
+  prev.addEventListener('click', () => current > 0 && goTo(current - 1));
+  next.addEventListener('click', () => current < slides.length - 1 && goTo(current + 1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next.click();
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') prev.click();
+  });
+</script>
+
+</body>
+</html>

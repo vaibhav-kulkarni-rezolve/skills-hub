@@ -29,6 +29,7 @@ export class ProfilesService {
   private async extractAndSave(profileId: string, rawText: string) {
     const extracted = await this.aiService.extractProfile(rawText);
     await this.saveExtractedProfile(profileId, extracted);
+    console.log(`Extracted and saved profile ${profileId}`);
   }
 
   async saveExtractedProfile(profileId: string, extracted: ExtractedProfile) {
